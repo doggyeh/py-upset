@@ -380,7 +380,7 @@ class UpSetPlot():
         for x, y in zip(self.x_values, inters_sizes):
             # ax.text(x, y + label_vertical_gap, "%.2g" % y,
             # [Robin] Show plain umber instead of scientific style
-            ax.text(x, y + label_vertical_gap, "%d" % y,
+            ax.text(x, y + label_vertical_gap, "{:,}".format(y),
                     rotation=90, ha='center', va='bottom')
 
         ax.ticklabel_format(style='plain', axis='y', scilimits=(0, 4))
