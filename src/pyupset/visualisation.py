@@ -380,7 +380,7 @@ class UpSetPlot():
         for x, y in zip(self.x_values, inters_sizes):
             # ax.text(x, y + label_vertical_gap, "%.2g" % y,
             # [Robin] Show plain umber instead of scientific style
-            ax.text(x, y + label_vertical_gap, "%d" % y,
+            ax.text(x, y + label_vertical_gap, "{:,}".format(y),
                     rotation=90, ha='center', va='bottom')
 
         ax.ticklabel_format(style='plain', axis='y', scilimits=(0, 4))
@@ -510,6 +510,8 @@ class DataExtractor:
         self.unique_keys = unique_keys if len(unique_keys) > 1 else unique_keys[0]
         self.ordered_dfs, self.ordered_df_names, self.df_dict = self.extract_base_sets_data(data_dict,
                                                                                             unique_keys)
+        # robin
+        self.concated_dfs = pd.concat(self.ordered_dfs)
         self.in_sets_list, self.inters_degrees, \
         self.out_sets_list, self.inters_df_dict = self.extract_intersection_data()
 
@@ -588,7 +590,9 @@ class DataExtractor:
         :return: Array of int (sizes), array of tuples (sets included in intersection), array of tuples (sets
         excluded from intersection), all filtered and sorted.
         """
-        inters_sizes = np.array([self.inters_df_dict[x].shape[0] for x in self.in_sets_list])
+        # robin
+        inters_sizes = np.array([ self.concated_dfs[self.concated_dfs['machine_guid'].isin(self.inters_df_dict[x]['machine_guid'])]['c'].sum()for x in self.in_sets_list])
+        # inters_sizes = np.array([self.inters_df_dict[x].shape[0] for x in self.in_sets_list])
         inters_degrees = np.array(self.inters_degrees)
 
         size_clip = (inters_sizes <= inters_size_bounds[1]) & (inters_sizes >= inters_size_bounds[0]) & (
