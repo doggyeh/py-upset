@@ -177,9 +177,9 @@ class UpSetPlot():
         tablesize_w, tablesize_h = setsize_w + 2, self.rows
         intmatrix_w, intmatrix_h = tablesize_w + self.cols, self.rows
         intbars_w, intbars_h = tablesize_w + self.cols, self.rows * 4
-        ax_setsize = plt.subplot(gs_top[-1:-setsize_h, 0:setsize_w])
-        ax_tablenames = plt.subplot(gs_top[-1:-tablesize_h, setsize_w:tablesize_w])
-        ax_intmatrix = plt.subplot(gs_top[-1:-intmatrix_h, tablesize_w:intmatrix_w])
+        ax_setsize = plt.subplot(gs_top[-setsize_h:-1, 0:setsize_w])
+        ax_tablenames = plt.subplot(gs_top[-tablesize_h:-1, setsize_w:tablesize_w])
+        ax_intmatrix = plt.subplot(gs_top[-intmatrix_h:-1, tablesize_w:intmatrix_w])
         ax_intbars = plt.subplot(gs_top[:self.rows * 4 - 1, tablesize_w:intbars_w])
 
         add_ax = []
@@ -530,7 +530,9 @@ class DataExtractor:
             dfs.append(df[unique_keys])
         df_names = np.array(df_names)
         # order dfs
-        base_sets_order = np.argsort([x.shape[0] for x in dfs])[::-1]
+        # [Robin] Sort dataframes by dict keys instead of size
+        # base_sets_order = np.argsort([x.shape[0] for x in dfs])[::-1]
+        base_sets_order = np.argsort(df_names)[::-1]
         ordered_base_set_names = df_names[base_sets_order]
         ordered_base_sets = [data_dict[name] for name in ordered_base_set_names]
         set_dict = dict(zip(ordered_base_set_names, ordered_base_sets))
