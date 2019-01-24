@@ -10,7 +10,7 @@ from matplotlib.patches import Rectangle, Circle
 
 
 def plot(data_dict, *, unique_keys=None, sort_by='size', inters_size_bounds=(0, np.inf),
-         inters_degree_bounds=(1, np.inf), additional_plots=None, query=None):
+         inters_degree_bounds=(1, np.inf), additional_plots=None, query=None, sum_count=False):
     """
     Plots a main set of graph showing intersection size, intersection matrix and the size of base sets. If given,
     additional plots are placed below the main graph.
@@ -57,7 +57,7 @@ def plot(data_dict, *, unique_keys=None, sort_by='size', inters_size_bounds=(0, 
 
     plot_data = DataExtractor(data_dict, all_columns)
     ordered_inters_sizes, ordered_in_sets, ordered_out_sets = \
-        plot_data.get_filtered_intersections(sort_by,inters_size_bounds,inters_degree_bounds)
+        plot_data.get_filtered_intersections(sort_by,inters_size_bounds,inters_degree_bounds, sum_count=sum_count)
     ordered_dfs, ordered_df_names = plot_data.ordered_dfs, plot_data.ordered_df_names
 
     upset = UpSetPlot(len(ordered_dfs), len(ordered_in_sets), additional_plots, query)
@@ -510,6 +510,8 @@ class DataExtractor:
         self.unique_keys = unique_keys if len(unique_keys) > 1 else unique_keys[0]
         self.ordered_dfs, self.ordered_df_names, self.df_dict = self.extract_base_sets_data(data_dict,
                                                                                             unique_keys)
+        # robin
+        self.concated_dfs = pd.concat(self.ordered_dfs)
         self.in_sets_list, self.inters_degrees, \
         self.out_sets_list, self.inters_df_dict = self.extract_intersection_data()
 
@@ -578,7 +580,7 @@ class DataExtractor:
 
         return in_sets_list, inters_degrees, out_sets_list, inters_dict
 
-    def get_filtered_intersections(self, sort_by, inters_size_bounds, inters_degree_bounds):
+    def get_filtered_intersections(self, sort_by, inters_size_bounds, inters_degree_bounds, sum_count=False):
         """
         Filter the intersection data according to the user's directives and return it.
 
@@ -588,7 +590,8 @@ class DataExtractor:
         :return: Array of int (sizes), array of tuples (sets included in intersection), array of tuples (sets
         excluded from intersection), all filtered and sorted.
         """
-        inters_sizes = np.array([self.inters_df_dict[x].shape[0] for x in self.in_sets_list])
+        inters_sizes = ((np.array([self.inters_df_dict[x].shape[0] for x in self.in_sets_list])) if not sum_count
+                else (np.array([ self.concated_dfs[self.concated_dfs['machine_guid'].isin(self.inters_df_dict[x]['machine_guid'])]['c'].sum()for x in self.in_sets_list])))
         inters_degrees = np.array(self.inters_degrees)
 
         size_clip = (inters_sizes <= inters_size_bounds[1]) & (inters_sizes >= inters_size_bounds[0]) & (
